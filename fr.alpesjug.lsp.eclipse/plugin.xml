@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="ski"
+            id="fr.alpesjug.lsp.eclipse"
+            name="Fichier Toulousain"
+            priority="normal">
+      </content-type>
+   </extension>
+   <extension
+         point="org.eclipse.lsp4e.languageServer">
+      <server
+            class="fr.alpesjug.lsp.eclipse.ChamrousseLanguageServerStreamProvider"
+            id="fr.alpesjug.lsp.eclipse.server1"
+            label="fr.alpesjug.lsp.eclipse.server1">
+      </server>
+      <contentTypeMapping
+            contentType="fr.alpesjug.lsp.eclipse"
+            id="fr.alpesjug.lsp.eclipse.server1">
+      </contentTypeMapping>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="fr.alpesjug.lsp.eclipse"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+</plugin>
