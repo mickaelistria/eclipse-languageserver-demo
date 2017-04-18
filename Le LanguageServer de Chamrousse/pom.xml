@@ -3,7 +3,7 @@
   <groupId>fr.alpesjug</groupId>
   <artifactId>chamrousse-languageserver</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Demo d'un Language Server (code en Java) pour les Toulousains</name>
+  <name>Demo d'un Language Server (code en Java) pour les Grenoblois</name>
   <dependencies>
   	<dependency>
   		<groupId>org.eclipse.lsp4j</groupId>
