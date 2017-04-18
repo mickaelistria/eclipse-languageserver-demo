@@ -19,7 +19,7 @@ public class ChamrousseMap {
 	final Map<String, String> type;
 	
 	private ChamrousseMap() {
-		InputStream propertiesStream = getClass().getResourceAsStream("chamrousseMap.properties");
+		InputStream propertiesStream = ChamrousseMap.class.getResourceAsStream("/" + ChamrousseMap.class.getPackage().getName().replace(".", "/") + "/chamrousseMap.properties");
 		try {
 			props.load(propertiesStream);
 			propertiesStream.close();
