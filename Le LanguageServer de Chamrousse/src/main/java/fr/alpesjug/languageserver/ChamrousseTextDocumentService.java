@@ -35,13 +35,15 @@ import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import fr.alpesjug.languageserver.ChamrousseDocumentModel.DocumentRoute;
+import fr.alpesjug.languageserver.ChamrousseDocumentModel.Route;
+import fr.alpesjug.languageserver.ChamrousseDocumentModel.VariableDefinition;
 
 public class ChamrousseTextDocumentService implements TextDocumentService {
 
@@ -75,8 +77,8 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 			ChamrousseDocumentModel doc = docs.get(position.getTextDocument().getUri());
 			Hover res = new Hover();
 			res.setContents(doc.getResolvedRoutes().stream()
-				.filter(route -> route.getLine() == position.getPosition().getLine())
-				.map(DocumentRoute::getName)
+				.filter(route -> route.line == position.getPosition().getLine())
+				.map(route -> route.name)
 				.map(ChamrousseMap.INSTANCE.type::get)
 				.map(this::getHoverContent)
 				.collect(Collectors.toList()));
@@ -86,7 +88,7 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	
 	private Either<String, MarkedString> getHoverContent(String type) {
 		return Either.forLeft(type);
-		// EDIT: cosmetic tool improvement
+		// TODO: cosmetic tool improvement
 		/*if ("Verte".equals(type)) {
 			return Either.forLeft("<font color='green'>Verte</font>");
 		} else if ("Bleue".equals(type)) {
@@ -131,23 +133,23 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 			String variable = doc.getVariable(params.getPosition().getLine(), params.getPosition().getCharacter()); 
 			if (variable != null) {
 				return doc.getResolvedRoutes().stream()
-					.filter(route -> route.getText().contains("${" + variable + "}") || route.getText().startsWith(variable + "="))
+					.filter(route -> route.text.contains("${" + variable + "}") || route.text.startsWith(variable + "="))
 					.map(route -> new Location(params.getTextDocument().getUri(), new Range(
-						new Position(route.getLine(), route.getText().indexOf(variable)),
-						new Position(route.getLine(), route.getText().indexOf(variable) + variable.length())
+						new Position(route.line, route.text.indexOf(variable)),
+						new Position(route.line, route.text.indexOf(variable) + variable.length())
 					)))
 					.collect(Collectors.toList());
 			}
 			String routeName = doc.getResolvedRoutes().stream()
-					.filter(route -> route.getLine() == params.getPosition().getLine())
+					.filter(route -> route.line == params.getPosition().getLine())
 					.collect(Collectors.toList())
 					.get(0)
-					.getName();
+					.name;
 			return doc.getResolvedRoutes().stream()
-					.filter(route -> route.getName().equals(routeName))
+					.filter(route -> route.name.equals(routeName))
 					.map(route -> new Location(params.getTextDocument().getUri(), new Range(
-							new Position(route.getLine(), 0),
-							new Position(route.getLine(), route.getLength()))))
+							new Position(route.line, 0),
+							new Position(route.line, route.text.length()))))
 					.collect(Collectors.toList());
 		});
 	}
@@ -159,8 +161,22 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return CompletableFuture.supplyAsync(() -> 
+			docs.get(params.getTextDocument().getUri()).getResolvedLines().stream().map(line -> {
+				SymbolInformation symbol = new SymbolInformation();
+				symbol.setLocation(new Location(params.getTextDocument().getUri(), new Range(
+						new Position(line.line, line.charOffset),
+						new Position(line.line, line.charOffset + line.text.length()))));
+				if (line instanceof VariableDefinition) {
+					symbol.setKind(SymbolKind.Variable);
+					symbol.setName(((VariableDefinition) line).variableName);
+				} else if (line instanceof Route) {
+					symbol.setKind(SymbolKind.String);
+					symbol.setName(((Route) line).name);
+				}
+				return symbol;
+			}).collect(Collectors.toList())
+		);
 	}
 
 	@Override
@@ -170,8 +186,29 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 			.map(diagnostic -> {
 				List<Command> res = new ArrayList<>();
 				res.add(new Command("Enlever ce trocon", "edit", Collections.singletonList(new TextEdit(diagnostic.getRange(), ""))));
-				ChamrousseDocumentModel doc = docs.get(params.getTextDocument().getUri());
-				// TODO : add insert and replace according to next route
+				// TODO syntaxic change: support comment (Tool part of syntax/parser change)
+				// res.add(new Command("Commenter ce trocon", "edit", Collections.singletonList(new TextEdit(new Range(diagnostic.getRange().getStart(), diagnostic.getRange().getStart()), "#"))));
+				// TODO Functional change: Add a nice productive feature
+				/*ChamrousseDocumentModel doc = docs.get(params.getTextDocument().getUri());
+				Route route = doc.getRoute(params.getRange().getStart().getLine());
+				if (route != null) {
+					int index = doc.getResolvedRoutes().indexOf(route);
+					if (index >= 0)
+						if (index > 0) {
+							Route previousRoute = doc.getResolvedRoutes().get(doc.getResolvedRoutes().indexOf(route) - 1);
+							for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.getName(), route.getName())) {
+								res.add(new Command("Inserer '" + way + "'", "edit", Collections.singletonList(
+										new TextEdit(new Range(diagnostic.getRange().getStart(), diagnostic.getRange().getStart()), way + "\n"))));
+							}
+							if (index + 1< doc.getResolvedRoutes().size()) {
+								Route nextRoute = doc.getResolvedRoutes().get(index + 1);
+								for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.getName(), nextRoute.getName())) {
+									res.add(new Command("Remplacer par '" + way + "'", "edit", Collections.singletonList(
+											new TextEdit(diagnostic.getRange(), way))));
+								}
+							}
+						}
+				}*/
 				return res.stream();
 			})
 			.flatMap(it -> it)
@@ -191,7 +228,6 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -237,23 +273,23 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 
 	private List<Diagnostic> validate(ChamrousseDocumentModel model) {
 		List<Diagnostic> res = new ArrayList<>();
-		DocumentRoute previousRoute = null;
-		for (DocumentRoute route : model.getResolvedRoutes()) {
-			if (!ChamrousseMap.INSTANCE.all.contains(route.getName())) {
+		Route previousRoute = null;
+		for (Route route : model.getResolvedRoutes()) {
+			if (!ChamrousseMap.INSTANCE.all.contains(route.name)) {
 				Diagnostic diagnostic = new Diagnostic();
 				diagnostic.setSeverity(DiagnosticSeverity.Error);
 				diagnostic.setMessage("Ca existe pas a Chamrousse ca");
 				diagnostic.setRange(new Range(
-						new Position(route.getLine(), route.getCharOffset()),
-						new Position(route.getLine(), route.getCharOffset() + route.getLength())));
+						new Position(route.line, route.charOffset),
+						new Position(route.line, route.charOffset + route.text.length())));
 				res.add(diagnostic);
-			} else if (previousRoute != null && !ChamrousseMap.INSTANCE.startsFrom.get(route.getName()).contains(previousRoute.getName())) {
+			} else if (previousRoute != null && !ChamrousseMap.INSTANCE.startsFrom(route.name, previousRoute.name)) {
 				Diagnostic diagnostic = new Diagnostic();
 				diagnostic.setSeverity(DiagnosticSeverity.Warning);
-				diagnostic.setMessage("Il n'y a pas de passage de '" + previousRoute.getName() + "' a '" + route.getName() + "'");
+				diagnostic.setMessage("Il n'y a pas de passage de '" + previousRoute.name + "' a '" + route.name + "'");
 				diagnostic.setRange(new Range(
-						new Position(route.getLine(), route.getCharOffset()),
-						new Position(route.getLine(), route.getCharOffset() + route.getLength())));
+						new Position(route.line, route.charOffset),
+						new Position(route.line, route.charOffset + route.text.length())));
 				res.add(diagnostic);
 			}
 			previousRoute = route;

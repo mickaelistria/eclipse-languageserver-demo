@@ -5,81 +5,76 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.PriorityQueue;
+import java.util.Optional;
 
 public class ChamrousseDocumentModel {
 
-	public static class DocumentRoute {
-		private final int line;
-		private final String text;
-		private final int charOffset;
-		private final String name;
-		private final int length;
+	public static abstract class DocumentLine {
+		final int line;
+		final String text;
+		final int charOffset;
 		
-		public DocumentRoute(int line, String text, int charOffset, int length, String name) {
+		protected DocumentLine(int line, int charOffset, String text) {
 			this.line = line;
-			this.text = text;
 			this.charOffset = charOffset;
-			this.length = length;
-			this.name = name;
-		}
-		
-		public int getLine() {
-			return line;
-		}
-
-		public int getCharOffset() {
-			return charOffset;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public int getLength() {
-			return length;
-		}
-		
-		public String getText() {
-			return text;
+			this.text = text;
 		}
 	}
 	
-	private final List<String> lines = new ArrayList<>();
-	private final PriorityQueue<DocumentRoute> routes = new PriorityQueue<>((route1, route2) -> {
-		int diff = route1.getLine() - route2.getLine();
-		if (diff != 0) {
-			return diff;
-		} else {
-			return route1.getCharOffset() - route2.getCharOffset();
+	public static class Route extends DocumentLine {
+		final String name;
+		
+		public Route(int line, int charOffset, String text, String name) {
+			super(line, charOffset, text);
+			this.name = name;
 		}
-	});
-	private final Map<String, String> variables = new HashMap<>();
-	private final Map<String, Integer> variableDefinitionLines = new HashMap<>();
+	}
+
+	public static class VariableDefinition extends DocumentLine {
+		final String variableName;
+		final String variableValue;
+		
+		public VariableDefinition(int lineNumber, int charOffset, String text, String variableName, String value) {
+			super(lineNumber, charOffset, text);
+			this.variableName = variableName;
+			variableValue = value;
+		}
+
+	}
+	
+	private final List<DocumentLine> lines = new ArrayList<>();
+	private final List<Route> routes = new ArrayList<>();
+	private final Map<String, VariableDefinition> variables = new HashMap<>();
 	
 	public ChamrousseDocumentModel(String text) {
 		try (
 			Reader r = new StringReader(text);
 			BufferedReader reader = new BufferedReader(r);
 		) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				lines.add(line);
-				// EDIT: languge syntax change
+			String lineText;
+			int lineNumber = 0;
+			while ((lineText = reader.readLine()) != null) {
+				DocumentLine line = null;
+				// TODO: languge syntax change
 				/*if (line.startsWith("#")) {
 					continue;
 				}*/
-				if (line.contains("=")) {
-					variableDefinition(lines.size() - 1, line);
-				} else if (!line.trim().isEmpty()) {
-					routes.add(new DocumentRoute(lines.size() - 1, line, 0, line.length(), resolve(line)));
+				if (lineText.contains("=")) {
+					line = variableDefinition(lineNumber, lineText);
+				} else if (!lineText.trim().isEmpty()) {
+					Route route = new Route(lineNumber, 0, lineText, resolve(lineText));
+					routes.add(route);
+					line = route;
 				}
-				
+				if (line != null) {
+					lines.add(line);
+				}
+				lineNumber++;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -87,26 +82,32 @@ public class ChamrousseDocumentModel {
 	}
 
 	private String resolve(String line) {
-		for (Entry<String, String> variable : variables.entrySet()) {
-			line = line.replace("${" + variable.getKey() + "}", variable.getValue());
+		for (Entry<String, VariableDefinition> variable : variables.entrySet()) {
+			line = line.replace("${" + variable.getKey() + "}", variable.getValue().variableValue);
 		}
 		return line;
 	}
 
-	private void variableDefinition(int lineNumber, String line) {
+	private VariableDefinition variableDefinition(int lineNumber, String line) {
 		String[] segments = line.split("=");
 		if (segments.length == 2) {
-			variables.put(segments[0], segments[1]);
-			variableDefinitionLines.put(segments[0], lineNumber);
+			VariableDefinition def = new VariableDefinition(lineNumber, 0, line, segments[0], segments[1]);
+			variables.put(def.variableName, def);
+			return def;
 		}
+		return null;
 	}
 
-	public Collection<DocumentRoute> getResolvedRoutes() {
-		return this.routes;
+	public List<Route> getResolvedRoutes() {
+		return Collections.unmodifiableList(this.routes);
 	}
 
-	public String getVariable(int line, int character) {
-		String text = lines.get(line);
+	public String getVariable(int lineNumber, int character) {
+		Optional<DocumentLine> docLine = this.lines.stream().filter(line -> line.line == lineNumber).findFirst();
+		if (!docLine.isPresent()) {
+			return null;
+		}
+		String text = docLine.get().text;
 		if (text.contains("=") && character < text.indexOf("=")) {
 			return text.split("=")[0];
 		}
@@ -117,12 +118,25 @@ public class ChamrousseDocumentModel {
 		}
 		return null;
 	}
+	
+	public Route getRoute(int line) {
+		for (Route route : getResolvedRoutes()) {
+			if (route.line == line) {
+				return route;
+			}
+		}
+		return null;
+	}
 
 	public int getDefintionLine(String variable) {
-		if (this.variableDefinitionLines.containsKey(variable)) {
-			return this.variableDefinitionLines.get(variable);
+		if (this.variables.containsKey(variable)) {
+			return this.variables.get(variable).line;
 		}
 		return -1;
+	}
+
+	public List<DocumentLine> getResolvedLines() {
+		return Collections.unmodifiableList(this.lines);
 	}
 
 }

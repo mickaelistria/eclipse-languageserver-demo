@@ -29,9 +29,9 @@ public class ChamrousseLanguageServer implements LanguageServer {
 		res.getCapabilities().setCompletionProvider(new CompletionOptions());
 		res.getCapabilities().setDefinitionProvider(Boolean.TRUE);
 		res.getCapabilities().setHoverProvider(Boolean.TRUE);
-		res.getCapabilities().setDocumentSymbolProvider(Boolean.FALSE);
 		res.getCapabilities().setReferencesProvider(Boolean.TRUE);
 		res.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
+		res.getCapabilities().setDocumentSymbolProvider(Boolean.TRUE);
 		
 		return CompletableFuture.supplyAsync(() -> res);
 	}

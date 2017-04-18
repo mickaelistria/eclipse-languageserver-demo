@@ -50,13 +50,13 @@ TODO
 
 ## Script
 
-. Show and demo the modules individually
-. When LS is shown working in all IDEs, modify it (look for `EDIT` in the code of the language server). Possible changes:
-.. Language > Syntaxic change: allow a new syntax in the language (such as comments) in ChamrousseDocumentModel
-.. Language > Lexical change : allow new words in the language in `chamrousseMap.properties`
-.. Tool > Functional change: improve completion or quickfix to show possible values that don't produce errors
-.. Tool > Cosmetic change: improve the hover to show the color
-. Rebuild server
-. Restart the various IDEs to show that the changes are taken into account **without need to change any functional code**
+* Show and demo the modules individually
+  * When LS is shown working in all IDEs, modify it (look for `EDIT` in the code of the language server). Possible changes:
+  * Language > Syntaxic change: allow a new syntax in the language (such as comments) in ChamrousseDocumentModel
+  * Language > Lexical change : allow new words in the language in `chamrousseMap.properties`
+  * Tool > Functional change: improve completion or quickfix to show possible values that don't produce errors
+  * Tool > Cosmetic change: improve the hover to show the color
+* Rebuild server
+* Restart the various IDEs to show that the changes are taken into account **without need to change any functional code**
 
 Conclusion: good separation of concerns makes it much easier to maintain the language support in all IDEs at once.
