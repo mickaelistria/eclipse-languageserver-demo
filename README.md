@@ -2,6 +2,10 @@
 
 This repository contains several projects to demonstrate the Language Server Protocol in action together with some Eclipse technologies:
 
+This was used for the AlpesJug demo in April 2017:
+* https://www.meetup.com/AlpesJUG/events/238766199/
+* https://bluejeans.com/s/GtDcO/
+
 ## Content
 
 ### Le LanguageServer de Chamrousse
