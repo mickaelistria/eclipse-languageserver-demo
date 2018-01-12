@@ -67,7 +67,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>florentbenoit/alpesjug</name>
+                            <name>florentbenoit/chamrousse</name>
                             <build>
                                 <dockerFile>Dockerfile</dockerFile>
                             </build>
