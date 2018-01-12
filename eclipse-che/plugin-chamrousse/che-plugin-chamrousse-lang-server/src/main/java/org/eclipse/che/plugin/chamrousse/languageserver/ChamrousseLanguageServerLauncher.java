@@ -8,53 +8,48 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.plugin.alpesjug.languageserver;
+package org.eclipse.che.plugin.chamrousse.languageserver;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import org.eclipse.che.api.languageserver.exception.LanguageServerException;
-import org.eclipse.che.api.languageserver.launcher.LanguageServerLauncherTemplate;
-import org.eclipse.che.api.languageserver.shared.model.LanguageDescription;
-import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.lsp4j.services.LanguageServer;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-
-import static java.util.Arrays.asList;
+import org.eclipse.che.api.languageserver.exception.LanguageServerException;
+import org.eclipse.che.api.languageserver.launcher.LanguageServerLauncherTemplate;
+import org.eclipse.che.api.languageserver.registry.DocumentFilter;
+import org.eclipse.che.api.languageserver.registry.LanguageServerDescription;
+import org.eclipse.che.plugin.chamrousse.inject.ChamrousseModule;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 /**
  * @author Florent benoit
  */
 @Singleton
-public class AlpesJugLanguageServerLauncher extends LanguageServerLauncherTemplate {
+public class ChamrousseLanguageServerLauncher extends LanguageServerLauncherTemplate {
 
-    private static final String   LANGUAGE_ID = "alpesjug";
-    private static final String[] EXTENSIONS  = new String[] {"tls", "gnb", "ski"};
-    private static final String[] MIME_TYPES  = new String[] {"text/x-alpesjug"};
-    private static final LanguageDescription description;
+
+    private static final LanguageServerDescription DESCRIPTION = createServerDescription();
 
     private final Path launchScript;
 
-    static {
-        description = new LanguageDescription();
-        description.setFileExtensions(asList(EXTENSIONS));
-        description.setLanguageId(LANGUAGE_ID);
-        description.setMimeTypes(Arrays.asList(MIME_TYPES));
-    }
+    private static final String REGEX = ".*\\.ski";
+
 
     @Inject
-    public AlpesJugLanguageServerLauncher() {
-        launchScript = Paths.get(System.getenv("HOME"), "che/ls-alpesjug/launch.sh");
+    public ChamrousseLanguageServerLauncher() {
+        launchScript = Paths.get(System.getenv("HOME"), "ls-chamrousse/launch.sh");
     }
 
+    /**
+     * Gets the language server description
+     */
     @Override
-    public LanguageDescription getLanguageDescription() {
-        return description;
+    public LanguageServerDescription getDescription() {
+        return DESCRIPTION;
     }
 
     @Override
@@ -71,7 +66,7 @@ public class AlpesJugLanguageServerLauncher extends LanguageServerLauncherTempla
         try {
             return processBuilder.start();
         } catch (IOException e) {
-            throw new LanguageServerException("Can't start AlpesJug language server", e);
+            throw new LanguageServerException("Cannot start Chamrousse language server", e);
         }
     }
 
@@ -81,5 +76,15 @@ public class AlpesJugLanguageServerLauncher extends LanguageServerLauncherTempla
                                                                     languageServerProcess.getInputStream(), languageServerProcess.getOutputStream());
         launcher.startListening();
         return launcher.getRemoteProxy();
+    }
+
+
+    private static LanguageServerDescription createServerDescription() {
+        LanguageServerDescription description =
+            new LanguageServerDescription(
+                "org.eclipse.che.plugin.chamrousse.languageserver",
+                null,
+                Arrays.asList(new DocumentFilter(ChamrousseModule.LANGUAGE_ID, REGEX, null)));
+        return description;
     }
 }
