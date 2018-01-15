@@ -54,10 +54,10 @@ public class TestLanguageServer {
 		
 		TextDocumentIdentifier id = new TextDocumentIdentifier(doc.getUri());
 		CompletableFuture<Hover> hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, doc.getUri(), new Position(0, 1)));
-		Assert.assertEquals("Verte", hover.get().getContents().get(0).getLeft());
+		Assert.assertEquals("Green", hover.get().getContents().get(0).getLeft());
 		
 		hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, doc.getUri(), new Position(0, 0)));
-		Assert.assertEquals("Verte", hover.get().getContents().get(0).getLeft());
+		Assert.assertEquals("Green", hover.get().getContents().get(0).getLeft());
 	}
 
 	@Test

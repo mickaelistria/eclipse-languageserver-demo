@@ -88,17 +88,8 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	
 	private Either<String, MarkedString> getHoverContent(String type) {
 		return Either.forLeft(type);
-		// TODO: cosmetic tool improvement
-		/*if ("Verte".equals(type)) {
-			return Either.forLeft("<font color='green'>Verte</font>");
-		} else if ("Bleue".equals(type)) {
-			return Either.forLeft("<font color='blue'>Bleue</font>");
-		} else if ("Rouge".equals(type)) {
-			return Either.forLeft("<font color='red'>Rouge</font>");
-		} else if ("Noire".equals(type)) {
-			return Either.forLeft("<font color='black'>Noire</font>");
-		}
-		return Either.forLeft(type);*/
+		// TODO: cosmetic tool improvement, show colors
+		//return Either.forLeft("<font color='" + type.toLowerCase() + "'>" + type + "</font>");
 	}
 
 	@Override
@@ -189,20 +180,20 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 				// TODO syntaxic change: support comment (Tool part of syntax/parser change)
 				// res.add(new Command("Commenter ce trocon", "edit", Collections.singletonList(new TextEdit(new Range(diagnostic.getRange().getStart(), diagnostic.getRange().getStart()), "#"))));
 				// TODO Functional change: Add a nice productive feature
-				/*ChamrousseDocumentModel doc = docs.get(params.getTextDocument().getUri());
+				/* ChamrousseDocumentModel doc = docs.get(params.getTextDocument().getUri());
 				Route route = doc.getRoute(params.getRange().getStart().getLine());
 				if (route != null) {
 					int index = doc.getResolvedRoutes().indexOf(route);
 					if (index >= 0)
 						if (index > 0) {
 							Route previousRoute = doc.getResolvedRoutes().get(doc.getResolvedRoutes().indexOf(route) - 1);
-							for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.getName(), route.getName())) {
+							for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.name, route.name)) {
 								res.add(new Command("Inserer '" + way + "'", "edit", Collections.singletonList(
 										new TextEdit(new Range(diagnostic.getRange().getStart(), diagnostic.getRange().getStart()), way + "\n"))));
 							}
 							if (index + 1< doc.getResolvedRoutes().size()) {
 								Route nextRoute = doc.getResolvedRoutes().get(index + 1);
-								for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.getName(), nextRoute.getName())) {
+								for (String way : ChamrousseMap.INSTANCE.findWaysBetween(previousRoute.name, nextRoute.name)) {
 									res.add(new Command("Remplacer par '" + way + "'", "edit", Collections.singletonList(
 											new TextEdit(diagnostic.getRange(), way))));
 								}

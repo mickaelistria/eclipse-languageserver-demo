@@ -61,7 +61,7 @@ public class ChamrousseDocumentModel {
 			while ((lineText = reader.readLine()) != null) {
 				DocumentLine line = null;
 				// TODO: languge syntax change
-				/*if (line.startsWith("#")) {
+				/*if (lineText.startsWith("#")) {
 					continue;
 				}*/
 				if (lineText.contains("=")) {
