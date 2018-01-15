@@ -60,7 +60,7 @@ public class ChamrousseDocumentModel {
 			int lineNumber = 0;
 			while ((lineText = reader.readLine()) != null) {
 				DocumentLine line = null;
-				// TODO: languge syntax change
+				// TODO: language syntax change
 				/*if (lineText.startsWith("#")) {
 					continue;
 				}*/

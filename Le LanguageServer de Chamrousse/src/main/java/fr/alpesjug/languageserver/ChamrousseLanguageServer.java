@@ -2,6 +2,7 @@ package fr.alpesjug.languageserver;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -32,6 +33,7 @@ public class ChamrousseLanguageServer implements LanguageServer {
 		res.getCapabilities().setReferencesProvider(Boolean.TRUE);
 		res.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
 		res.getCapabilities().setDocumentSymbolProvider(Boolean.TRUE);
+		res.getCapabilities().setCodeLensProvider(new CodeLensOptions());
 		
 		return CompletableFuture.supplyAsync(() -> res);
 	}

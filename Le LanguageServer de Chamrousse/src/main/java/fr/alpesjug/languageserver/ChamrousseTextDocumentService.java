@@ -57,13 +57,13 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(
 			TextDocumentPositionParams position) {
-		return CompletableFuture.supplyAsync(() -> Either.forLeft(ChamrousseMap.INSTANCE.all.stream()
+		return CompletableFuture.supplyAsync(() -> Either.forRight(new CompletionList(false, ChamrousseMap.INSTANCE.all.stream()
 				.map(word -> {
 					CompletionItem item = new CompletionItem();
 					item.setLabel(word);
 					item.setInsertText(word);
 					return item;
-				}).collect(Collectors.toList())));
+				}).collect(Collectors.toList()))));
 	}
 
 	@Override
@@ -209,7 +209,11 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-		return null;
+		// TODO IDE feature change
+//		return CompletableFuture.supplyAsync(() -> docs.get(params.getTextDocument().getUri()).getResolvedRoutes().stream().map(route ->
+//			new CodeLens(new Range(new Position(route.line, 0), new Position(route.line, 1)), new Command(ChamrousseMap.INSTANCE.isLift(route.name) ? "🚡up" : "⛷️down", "kikoo"), null)
+//		).collect(Collectors.toList()));
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override

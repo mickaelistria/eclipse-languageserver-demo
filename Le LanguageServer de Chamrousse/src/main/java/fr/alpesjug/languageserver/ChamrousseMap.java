@@ -75,4 +75,8 @@ public class ChamrousseMap {
 	public boolean startsFrom(String route, String potentialStart) {
 		return this.startsFrom.get(route) != null && this.startsFrom.get(route).contains(potentialStart);
 	}
+
+	public boolean isLift(String name) {
+		return name.toUpperCase().startsWith("TC") || name.toUpperCase().startsWith("TS");
+	}
 }

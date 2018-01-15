@@ -80,32 +80,23 @@ public class TestLanguageServer {
 			
 			@Override
 			public void telemetryEvent(Object object) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 			
 			@Override
 			public void showMessage(MessageParams messageParams) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void logMessage(MessageParams message) {
-				// TODO Auto-generated method stub
-				
 			}
 		}, new PipedInputStream(serverOutput), new PipedOutputStream(serverInput));
 		createClientLauncher.startListening();
