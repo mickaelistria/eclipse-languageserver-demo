@@ -23,7 +23,7 @@ export function activate(context: ExtensionContext) {
 		wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
 	});
 
-
+ 
 	storagePath = context.storagePath;
 	if (!storagePath) {
 		storagePath = getTempWorkspace();
@@ -49,7 +49,7 @@ export function activate(context: ExtensionContext) {
 	let item = window.createStatusBarItem(StatusBarAlignment.Right, Number.MIN_VALUE);
     oldConfig = getServerConfiguration();
 	// Create the language client and start the client.
-	let languageClient = new LanguageClient('ski','Language Support for Toulouse', serverOptions, clientOptions);
+	let languageClient = new LanguageClient('ski','Language Support for Chamrousse', serverOptions, clientOptions);
 	languageClient.onNotification(StatusNotification.type, (report) => {
 		console.log(report.message);
 		switch (report.type) {
