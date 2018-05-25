@@ -1,14 +1,12 @@
 package fr.alpesjug.languageserver.tests;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -38,33 +36,32 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.alpesjug.languageserver.ChamrousseLanguageServer;
-import fr.alpesjug.languageserver.ChamrousseTextDocumentService;
 import fr.alpesjug.languageserver.Main;
 
 public class TestLanguageServer {
 
-	public void checkHover(LanguageServer ls) throws IOException, InterruptedException, ExecutionException {
+	public void checkHover(LanguageServer ls) throws Exception {
 		ls.initialize(new InitializeParams());
 		TextDocumentItem doc = new TextDocumentItem();
 		File f = File.createTempFile("blah", ".ski");
 		f.deleteOnExit();
 		doc.setUri(f.toURI().toString());
 		doc.setText("Balmette");
-		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc, doc.getText()));
-		
+		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc));
+
 		TextDocumentIdentifier id = new TextDocumentIdentifier(doc.getUri());
-		CompletableFuture<Hover> hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, doc.getUri(), new Position(0, 1)));
-		Assert.assertEquals("Green", hover.get().getContents().get(0).getLeft());
-		
-		hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, doc.getUri(), new Position(0, 0)));
-		Assert.assertEquals("Green", hover.get().getContents().get(0).getLeft());
+		CompletableFuture<Hover> hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, new Position(0, 1)));
+		Assert.assertEquals("Green", hover.get().getContents().getLeft().get(0).getLeft());
+
+		hover = ls.getTextDocumentService().hover(new TextDocumentPositionParams(id, new Position(0, 0)));
+		Assert.assertEquals("Green", hover.get().getContents().getLeft().get(0).getLeft());
 	}
 
 	@Test
-	public void checkHoverLocal() throws IOException, InterruptedException, ExecutionException {
+	public void checkHoverLocal() throws Exception {
 		checkHover(new ChamrousseLanguageServer());
 	}
-	
+
 	@Test
 	public void testMain() throws Exception {
 		PipedInputStream serverInput = new PipedInputStream();
@@ -72,29 +69,29 @@ public class TestLanguageServer {
 		new Thread(() -> {
 			try {
 				new Main().startServer(serverInput, serverOutput);
-			} catch (InterruptedException | ExecutionException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}).start();
 		Launcher<LanguageServer> createClientLauncher = LSPLauncher.createClientLauncher(new LanguageClient() {
-			
+
 			@Override
 			public void telemetryEvent(Object object) {
 			}
-			
+
 			@Override
 			public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
 				return null;
 			}
-			
+
 			@Override
 			public void showMessage(MessageParams messageParams) {
 			}
-			
+
 			@Override
 			public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
 			}
-			
+
 			@Override
 			public void logMessage(MessageParams message) {
 			}
@@ -103,7 +100,7 @@ public class TestLanguageServer {
 		LanguageServer server = createClientLauncher.getRemoteProxy();
 		checkHover(server);
 	}
-	
+
 	@Test
 	public void testQuickFixes() throws Exception {
 		ChamrousseLanguageServer ls = new ChamrousseLanguageServer();
@@ -112,22 +109,22 @@ public class TestLanguageServer {
 			@Override
 			public void telemetryEvent(Object object) {
 			}
-			
+
 			@Override
 			public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
 				return null;
 			}
-			
+
 			@Override
 			public void showMessage(MessageParams messageParams) {
 			}
-			
+
 			@Override
 			public void publishDiagnostics(PublishDiagnosticsParams d) {
 				diagnostics.clear();
 				diagnostics.addAll(d.getDiagnostics());
 			}
-			
+
 			@Override
 			public void logMessage(MessageParams message) {
 			}
@@ -137,16 +134,16 @@ public class TestLanguageServer {
 		f.deleteOnExit();
 		doc.setUri(f.toURI().toString());
 		doc.setText("choucroute");
-		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc, doc.getText()));
+		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc));
 		Thread.sleep(1000);
 		Assert.assertEquals("Missing diagnostic", 1, diagnostics.size());
 		Diagnostic diagnostic = diagnostics.get(0);
 		List<? extends Command> resolutions = ls.getTextDocumentService().codeAction(new CodeActionParams(new TextDocumentIdentifier(doc.getUri()), diagnostic.getRange(), new CodeActionContext(Collections.singletonList(diagnostic)))).get();
 		Assert.assertEquals("Missing resolution", 1, resolutions.size());
 		TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
-		
+
 		change.setText("\nunknown track");
-		ls.getTextDocumentService().didChange(new DidChangeTextDocumentParams(new VersionedTextDocumentIdentifier(1), doc.getUri(), Collections.singletonList(change)));
+		ls.getTextDocumentService().didChange(new DidChangeTextDocumentParams(new VersionedTextDocumentIdentifier(1), Collections.singletonList(change)));
 		Thread.sleep(1000);
 		Assert.assertEquals("Missing diagnostics", 1, diagnostics.size());
 		diagnostic = diagnostics.get(0);
@@ -162,8 +159,8 @@ public class TestLanguageServer {
 		f.deleteOnExit();
 		doc.setUri(f.toURI().toString());
 		doc.setText("${var}\n${var}\n${var}");
-		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc, doc.getText()));
-		
+		ls.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(doc));
+
 		ReferenceParams params = new ReferenceParams();
 		params.setTextDocument(new TextDocumentIdentifier(doc.getUri()));
 		params.setPosition(new Position(0,4));

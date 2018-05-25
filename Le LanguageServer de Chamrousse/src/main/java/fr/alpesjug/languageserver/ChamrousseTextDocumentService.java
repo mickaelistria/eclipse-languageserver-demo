@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -53,10 +54,9 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	public ChamrousseTextDocumentService(ChamrousseLanguageServer chamrousseLanguageServer) {
 		this.chamrousseLanguageServer = chamrousseLanguageServer;
 	}
-	
+
 	@Override
-	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(
-			TextDocumentPositionParams position) {
+	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params) {
 		return CompletableFuture.supplyAsync(() -> Either.forRight(new CompletionList(false, ChamrousseMap.INSTANCE.all.stream()
 				.map(word -> {
 					CompletionItem item = new CompletionItem();
@@ -85,7 +85,7 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 			return res;
 		});
 	}
-	
+
 	private Either<String, MarkedString> getHoverContent(String type) {
 		return Either.forLeft(type);
 		// TODO: cosmetic tool improvement, show colors
@@ -101,7 +101,7 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
 		return CompletableFuture.supplyAsync(() -> {
 			ChamrousseDocumentModel doc = docs.get(position.getTextDocument().getUri());
-			String variable = doc.getVariable(position.getPosition().getLine(), position.getPosition().getCharacter()); 
+			String variable = doc.getVariable(position.getPosition().getLine(), position.getPosition().getCharacter());
 			if (variable != null) {
 				int variableLine = doc.getDefintionLine(variable);
 				if (variableLine == -1) {
@@ -121,7 +121,7 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		return CompletableFuture.supplyAsync(() -> {
 			ChamrousseDocumentModel doc = docs.get(params.getTextDocument().getUri());
-			String variable = doc.getVariable(params.getPosition().getLine(), params.getPosition().getCharacter()); 
+			String variable = doc.getVariable(params.getPosition().getLine(), params.getPosition().getCharacter());
 			if (variable != null) {
 				return doc.getResolvedRoutes().stream()
 					.filter(route -> route.text.contains("${" + variable + "}") || route.text.startsWith(variable + "="))
@@ -152,7 +152,7 @@ public class ChamrousseTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		return CompletableFuture.supplyAsync(() -> 
+		return CompletableFuture.supplyAsync(() ->
 			docs.get(params.getTextDocument().getUri()).getResolvedLines().stream().map(line -> {
 				SymbolInformation symbol = new SymbolInformation();
 				symbol.setLocation(new Location(params.getTextDocument().getUri(), new Range(
