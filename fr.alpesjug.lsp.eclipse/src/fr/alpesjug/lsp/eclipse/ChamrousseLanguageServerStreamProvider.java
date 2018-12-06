@@ -14,6 +14,14 @@ public class ChamrousseLanguageServerStreamProvider extends ProcessStreamConnect
 		super(
 			Arrays.asList("/usr/bin/java", "-jar", "/home/mistria/workspaceDemoLSP/Le LanguageServer de Chamrousse/target/chamrousse-languageserver-0.0.1-SNAPSHOT-jar-with-dependencies.jar"),
 			new File(".").getAbsolutePath());
+//		super(
+//				Arrays.asList(new String[] { "docker",
+//						"run",
+//						"-v",
+//						"/home/mistria:/home/mistria",
+//						"-i",
+//						"chamrousse-ls",
+//				}), System.getProperty("user.dir"));
 	}
 
 }

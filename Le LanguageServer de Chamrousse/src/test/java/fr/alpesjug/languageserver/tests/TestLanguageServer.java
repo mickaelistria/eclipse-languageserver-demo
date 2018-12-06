@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
@@ -29,6 +30,7 @@ import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -138,7 +140,7 @@ public class TestLanguageServer {
 		Thread.sleep(1000);
 		Assert.assertEquals("Missing diagnostic", 1, diagnostics.size());
 		Diagnostic diagnostic = diagnostics.get(0);
-		List<? extends Command> resolutions = ls.getTextDocumentService().codeAction(new CodeActionParams(new TextDocumentIdentifier(doc.getUri()), diagnostic.getRange(), new CodeActionContext(Collections.singletonList(diagnostic)))).get();
+		List<Either<Command, CodeAction>> resolutions = ls.getTextDocumentService().codeAction(new CodeActionParams(new TextDocumentIdentifier(doc.getUri()), diagnostic.getRange(), new CodeActionContext(Collections.singletonList(diagnostic)))).get();
 		Assert.assertEquals("Missing resolution", 1, resolutions.size());
 		TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
 

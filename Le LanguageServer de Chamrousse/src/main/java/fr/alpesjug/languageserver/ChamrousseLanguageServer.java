@@ -1,7 +1,9 @@
 package fr.alpesjug.languageserver;
 
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.InitializeParams;
@@ -26,16 +28,16 @@ public class ChamrousseLanguageServer implements LanguageServer {
 	
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		final InitializeResult res = new InitializeResult(new ServerCapabilities());
-		res.getCapabilities().setCodeActionProvider(Boolean.TRUE);
-		res.getCapabilities().setCompletionProvider(new CompletionOptions());
+		res.getCapabilities().setCodeActionProvider(new CodeActionOptions(Collections.emptyList()));
+		res.getCapabilities().setCompletionProvider(new CompletionOptions(false, Collections.emptyList()));
 		res.getCapabilities().setDefinitionProvider(Boolean.TRUE);
 		res.getCapabilities().setHoverProvider(Boolean.TRUE);
 		res.getCapabilities().setReferencesProvider(Boolean.TRUE);
 		res.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
 		res.getCapabilities().setDocumentSymbolProvider(Boolean.TRUE);
-		res.getCapabilities().setCodeLensProvider(new CodeLensOptions());
+		res.getCapabilities().setCodeLensProvider(new CodeLensOptions(true));
 		
-		return CompletableFuture.supplyAsync(() -> res);
+		return CompletableFuture.completedFuture(res);
 	}
 
 	public CompletableFuture<Object> shutdown() {

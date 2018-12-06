@@ -120,7 +120,7 @@ export function activate(context: ExtensionContext) {
 	};
 	workspace.registerTextDocumentContentProvider('ski', provider);
 
-	item.text = 'Starting Toulouse Language Server...';
+	item.text = 'Starting Le Language Server de Chamrousse...';
 	toggleItem(window.activeTextEditor, item);
 	let disposable = languageClient.start();
 	// Push the disposable to the context's subscriptions so that the
