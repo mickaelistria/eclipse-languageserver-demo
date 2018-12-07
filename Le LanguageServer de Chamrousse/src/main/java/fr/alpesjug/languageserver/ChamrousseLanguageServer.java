@@ -28,8 +28,8 @@ public class ChamrousseLanguageServer implements LanguageServer {
 	
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		final InitializeResult res = new InitializeResult(new ServerCapabilities());
-		res.getCapabilities().setCodeActionProvider(new CodeActionOptions(Collections.emptyList()));
-		res.getCapabilities().setCompletionProvider(new CompletionOptions(false, Collections.emptyList()));
+		res.getCapabilities().setCodeActionProvider(new CodeActionOptions());
+		res.getCapabilities().setCompletionProvider(new CompletionOptions(false, ChamrousseMap.INSTANCE.getAllPossibleChars()));
 		res.getCapabilities().setDefinitionProvider(Boolean.TRUE);
 		res.getCapabilities().setHoverProvider(Boolean.TRUE);
 		res.getCapabilities().setReferencesProvider(Boolean.TRUE);

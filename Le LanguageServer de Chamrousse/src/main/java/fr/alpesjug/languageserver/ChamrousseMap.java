@@ -79,4 +79,12 @@ public class ChamrousseMap {
 	public boolean isLift(String name) {
 		return name.toUpperCase().startsWith("TC") || name.toUpperCase().startsWith("TS");
 	}
+
+	public List<String> getAllPossibleChars() {
+		Set<String> allChars = new HashSet<>();
+		for (String route : all) {
+			route.chars().mapToObj(n -> "" + Character.valueOf((char)n)).forEach(allChars::add);
+		}
+		return new ArrayList<>(allChars);
+	}
 }
